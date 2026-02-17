@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import axios from "axios";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -9,21 +8,45 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.post("/api/generate", async (req, res) => {
+app.post("/api/run-model", async (req, res) => {
   try {
-    const response = await axios.post(
-      "https://api-inference.huggingface.co/models/gpt2",
-      { inputs: req.body.input },
+    const { prompt } = req.body;
+
+    console.log("Prompt received:", prompt);
+
+    if (!prompt) {
+      return res.status(400).json({ result: "Prompt missing" });
+    }
+
+    const response = await fetch(
+      "https://router.huggingface.co/hf-inference/models/gpt2",
       {
+        method: "POST",
         headers: {
           Authorization: `Bearer ${process.env.HF_API_KEY}`,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          inputs: prompt,
+        }),
       }
     );
 
-    res.json(response.data);
+    const data = await response.json();
+
+    console.log("HF RESPONSE:", data);
+
+    if (data.error) {
+      return res.status(500).json({ result: data.error });
+    }
+
+    res.json({
+      result: data[0]?.generated_text || "No output",
+    });
+
   } catch (error) {
-    res.status(500).json({ error: "API request failed" });
+    console.error("SERVER ERROR:", error);
+    res.status(500).json({ result: "HF failed" });
   }
 });
 
