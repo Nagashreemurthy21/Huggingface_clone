@@ -1,14 +1,23 @@
+import StatsCard from "../components/StatsCard";
+
 function Home() {
   return (
-    <div className="hero">
-      <h1>Explore AI Models</h1>
-      <p>Discover, share and use state-of-the-art machine learning models.</p>
+    <div className="home-container">
 
-      <input
-        type="text"
-        placeholder="Search models..."
-        className="search-bar"
-      />
+      <div className="hero-section">
+        <h1>Welcome to AI Model Hub</h1>
+        <p>
+          Explore and interact with powerful AI models locally powered by Ollama.
+        </p>
+      </div>
+
+      <div className="stats-grid">
+        <StatsCard title="Total Models" value="12+" />
+        <StatsCard title="Active Users" value="1.2K" />
+        <StatsCard title="API Requests" value="25K+" />
+        <StatsCard title="Uptime" value="99.9%" />
+      </div>
+
     </div>
   );
 }

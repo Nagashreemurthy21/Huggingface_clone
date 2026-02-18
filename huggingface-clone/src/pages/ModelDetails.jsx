@@ -1,69 +1,58 @@
+import { useParams } from "react-router-dom";
 import { useState } from "react";
 
 function ModelDetails() {
-  const [input, setInput] = useState("");
+  const { id } = useParams();
+  const [prompt, setPrompt] = useState("");
   const [output, setOutput] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleRun = async () => {
+  const runModel = async () => {
+    if (!prompt.trim()) return;
+
+    setLoading(true);
+    setOutput("");
+
     try {
-      const response = await fetch("http://localhost:5000/api/run-model", {
+      const res = await fetch("http://localhost:5000/api/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          prompt: input
-        })
+        body: JSON.stringify({ prompt })
       });
 
-      const data = await response.json();
-      setOutput(data.result);
-
-    } catch (error) {
-      console.error("Frontend error:", error);
-      setOutput("Frontend failed");
+      const data = await res.json();
+      setOutput(data.output || "No response");
+    } catch (err) {
+      setOutput("Error: API failed");
     }
+
+    setLoading(false);
   };
 
   return (
-    <div style={{ padding: "40px" }}>
-      <h1>GPT-2</h1>
+    <div className="playground-wrapper">
+      <div className="playground-card">
+        <h2>AI Playground</h2>
+        <p className="model-id">Model ID: {id}</p>
 
-      <textarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Enter prompt..."
-        style={{
-          width: "100%",
-          height: "120px",
-          padding: "15px",
-          fontSize: "16px"
-        }}
-      />
+        <textarea
+          placeholder="Enter your prompt here..."
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+        />
 
-      <br /><br />
+        <button onClick={runModel} disabled={loading}>
+          {loading ? "Generating..." : "Run Model"}
+        </button>
 
-      <button
-        onClick={handleRun}
-        style={{
-          padding: "12px 25px",
-          fontSize: "16px",
-          cursor: "pointer"
-        }}
-      >
-        Run Model
-      </button>
-
-      <br /><br />
-
-      <div
-        style={{
-          background: "#f4f4f4",
-          padding: "20px",
-          borderRadius: "8px"
-        }}
-      >
-        {output}
+        <div className="output-section">
+          <h4>Output</h4>
+          <div className="output-box">
+            {output || "Your AI response will appear here..."}
+          </div>
+        </div>
       </div>
     </div>
   );
